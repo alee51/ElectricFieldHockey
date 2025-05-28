@@ -20,7 +20,10 @@ for i in range(-20,20):
         Ex = (k * qe * r_hatx) / (rx.mag**2)
         Ex_arrow = arrow(pos=obx, axis=r_hatx * 3, color=color.blue, shaftwidth =.6, opacity=Ex.mag / E.mag *3)
             
+def handle_mousedown(evt):
+  print("Mouse down at:", scene.mouse.pos)
 
+scene.bind('mousedown', handle_mousedown)
 
 
 #E_arrow = arrow(pos=observation_pos, axis=r_hat * 2, color=color.red, shaftwidth =.6, opacity=E.mag / max_field)
