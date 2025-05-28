@@ -1,0 +1,26 @@
+Web VPython 3.2
+k = 8.99e9
+qe = 1.6e-19
+
+source_pos = vector(0,0,0)
+source = sphere(pos=source_pos, radius=2, color=color.cyan)
+
+observation_pos = vector(5,0,0)
+
+r = observation_pos - source_pos
+r_hat = r / r.mag
+E = (k * qe * r_hat) / (r.mag**2)
+print(E.mag);
+
+for i in range(-20,20):
+    for j in range(-20,20):
+        obx = vector(i*3,j*3,0)
+        rx = obx - source_pos
+        r_hatx = rx / rx.mag
+        Ex = (k * qe * r_hatx) / (rx.mag**2)
+        Ex_arrow = arrow(pos=obx, axis=r_hatx * 3, color=color.blue, shaftwidth =.6, opacity=Ex.mag / E.mag *3)
+            
+
+
+
+#E_arrow = arrow(pos=observation_pos, axis=r_hat * 2, color=color.red, shaftwidth =.6, opacity=E.mag / max_field)
