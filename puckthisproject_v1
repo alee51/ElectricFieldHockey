@@ -2,23 +2,30 @@ Web VPython 3.2
 k = 8.99e9
 qe = 1.6e-19
 
-source_pos = vector(0,0,0)
-source = sphere(pos=source_pos, radius=2, color=color.cyan)
+
+source = sphere(pos=vector(0,0,0), radius=2, color=color.cyan)
+source2 = sphere(pos=vector(20,7,0), radius=2, color=color.cyan)
+sources = []
+sources.append(source)
+sources.append(source2)
 
 observation_pos = vector(5,0,0)
 
-r = observation_pos - source_pos
+r = observation_pos - source.pos
 r_hat = r / r.mag
 E = (k * qe * r_hat) / (r.mag**2)
 print(E.mag);
 
 for i in range(-20,20):
     for j in range(-20,20):
-        obx = vector(i*3,j*3,0)
-        rx = obx - source_pos
-        r_hatx = rx / rx.mag
-        Ex = (k * qe * r_hatx) / (rx.mag**2)
-        Ex_arrow = arrow(pos=obx, axis=r_hatx * 3, color=color.blue, shaftwidth =.6, opacity=Ex.mag / E.mag *3)
+        resultantE = vector(0,0,0);
+        observe = vector(i*3,j*3,0)
+        for charge in sources:
+            rx = observe - charge.pos
+            Ex = (k * qe * hat(rx)) / (rx.mag**2)
+            resultantE = resultantE + Ex
+        E_hat = hat(resultantE)
+        resultantA = arrow(pos=observe, axis=E_hat * 3, color=color.blue, shaftwidth =.6, opacity=resultantE.mag / E.mag *3)
             
 def handle_mousedown(evt):
   print("Mouse down at:", scene.mouse.pos)
