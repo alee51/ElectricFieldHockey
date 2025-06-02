@@ -1,0 +1,27 @@
+Web VPython 3.2
+k = 8.99e9
+qe = 1.6e-19
+
+rod = box(pos=vec(0, 0, 0), length=1, height=4, width=1, color=color.cyan)
+
+#number of increments
+n = 10
+dx = rod.height / n
+dq = qe / n
+
+
+
+observation_pos = vector(5,3,0)
+E = vector(0,0,0)
+R = vector(0,0,0)
+for i in range(-n/2,n/2):
+    # change y or x depending on dividing height or width
+    dr =  vector(rod.pos.x, rod.pos.y + i * dx, rod.pos.z)
+    rx =  observation_pos - dr
+    Ex = (k * dq * hat(rx)) / (rx.mag**2)
+    E = E + Ex
+    R = R + rx
+resultantE = arrow(pos=observation_pos, axis=R / R.mag * 3, color=color.blue, shaftwidth =.6)
+     #change rx to Ex
+
+#scene.camera.follow(resultantE)
