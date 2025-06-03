@@ -2,23 +2,44 @@ Web VPython 3.2
 k = 8.99e9
 qe = 1.6e-19
 
-rod = box(pos=vec(0, 0, 0), length=1, height=4, width=1, color=color.cyan)
+rod1 = box(pos=vec(0, 0, 0), length=1, height=4, width=1, color=color.cyan)
+rod2 = box(pos=vec(8, 5, 0), length=1, height=4, width=1, color=color.cyan)
+rod3 = box(pos=vec(0, 8, 0), length=1, height=4, width=1, color=color.cyan)
+rod4 = box(pos=vec(40, 8, 0), length=1, height=4, width=1, color=color.cyan)
+sources = []
+sources.append(rod1)
+sources.append(rod2)
+sources.append(rod3)
+sources.append(rod4)
 
 #number of increments
-n = 10
-dx = rod.height / n
+n = 100
+dx = rod1.height / n
 dq = qe / n
+Emax = 5.7536e-11
 
 for i in range(-20,20):
     for j in range(-20,20):
-        observe = vector(i*3,j*3,0)
-        E = vector(0,0,0)
-        R = vector(0,0,0)
-        for k in range(-n/2,n/2):
-            # change y or x depending on dividing height or width
-            dr =  vector(rod.pos.x, rod.pos.y + k * dx, rod.pos.z)
-            rx =  observe - dr
-            Ex = (k * dq * hat(rx)) / (rx.mag**2)
-            E = E + Ex
-            R = R + rx
-        resultantE = arrow(pos=observe, axis=R / R.mag * 3, color=color.blue, shaftwidth =.6)
+        Rtotal = vector(0,0,0)
+        Etotal = vector(0,0,0);
+        for rod in sources:
+            observe = vector(i*3,j*3,0)
+            E = vector(0,0,0)
+            #R = vector(0,0,0)
+            for a in range(-n/2,n/2):
+                # change y or x depending on dividing height or width
+                dr =  vector(rod.pos.x, rod.pos.y + a * dx, rod.pos.z)
+                if i == 0 and j == 0: 
+                    print(dr)
+                rx =  observe - dr
+                Ex = (k * dq * hat(rx)) / (rx.mag**2)
+                E = E + Ex
+                #R = R + rx
+            #Rtotal = Rtotal + R
+            Etotal = Etotal + E
+        if i == 0: 
+            print(Etotal.mag)
+        resultantE = arrow(pos=observe, axis=Etotal.hat * 3, color=color.blue, shaftwidth =.6, opacity =Etotal.mag / Emax)
+        #print(Etotal.mag)
+        #3.31636e-22
+        
