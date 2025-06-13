@@ -1,21 +1,21 @@
 Web VPython 3.2
-
+#scene.background = color.white
 
 k = 8.99e9
 qe = 1.6e-19
 
-ball1 = sphere(pos=vector(0,0,0), radius=2, color=color.cyan)
-ball2 = sphere(pos=vector(20,7,0), radius=2, color=color.cyan)
-ball3 = sphere(pos=vector(-30,7,0), radius=2, color=color.cyan)
+ball1 = sphere(pos=vector(0,0,0), radius=2, color=color.red)
+ball2 = sphere(pos=vector(20,7,0), radius=2, color=color.red)
+ball3 = sphere(pos=vector(-30,7,0), radius=2, color=color.red)
 balls = []
 balls.append(ball1)
 balls.append(ball2)
 balls.append(ball3)
 
 rod1 = box(pos=vec(0, -18, 0), length=2, height=6, width=1, color=color.cyan)
-rod2 = box(pos=vec(8, 10, 0), length=2, height=6, width=1, color=color.cyan)
-rod3 = box(pos=vec(0, 14, 0), length=2, height=6, width=1, color=color.cyan)
-rod4 = box(pos=vec(40, 8, 0), length=2, height=6, width=1, color=color.cyan)
+rod2 = box(pos=vec(8, 10, 0), length=2, height=6, width=1, color=color.red)
+rod3 = box(pos=vec(0, 14, 0), length=2, height=6, width=1, color=color.red)
+rod4 = box(pos=vec(40, 8, 0), length=2, height=6, width=1, color=color.red)
 rods = []
 rods.append(rod1)
 rods.append(rod2)
@@ -27,6 +27,7 @@ dx = rod1.height / n
 dq = qe / n
 Emax = 5.7536e-11
 
+field2D = [[0] * 40 for i in range(40)]
 for i in range(-20,20):
     for j in range(-20,20):
         resultantE = vector(0,0,0);
@@ -41,19 +42,73 @@ for i in range(-20,20):
             for a in range(-n/2,n/2):
                 # change y or x depending on dividing height or width
                 dr =  vector(rod.pos.x, rod.pos.y + a * dx, rod.pos.z)
-                if i == 0 and j == 0: 
-                    print(dr)
+                #if i == 0 and j == 0: 
+                   # print(dr)
                 rx =  observe - dr
                 Ex = (k * dq * hat(rx)) / (rx.mag**2)
                 E = E + Ex
             resultantE = resultantE + E
         E_hat = hat(resultantE)
-        resultantA = arrow(pos=observe, axis=E_hat * 3, color=color.blue, shaftwidth =.6, opacity=resultantE.mag / Emax * 2)
-            
+        #field2D[i+20][j+20] = E_hat
+        field2D[i][j] = resultantE
+        resultantA = arrow(pos=observe, axis=E_hat * 3, color=color.blue, shaftwidth =.6, opacity=resultantE.mag / Emax * 3)
+        #resultantX = arrow(pos=observe, axis=field2D[i][j] * 2, color=color.green, shaftwidth =.4)
+
+#for row in field2D:
+#    print(row)
+
 def handle_mousedown(evt):
   print("Mouse down at:", scene.mouse.pos)
 
 scene.bind('mousedown', handle_mousedown)
+
+t=0.00
+dt=0.05
+
+puck = sphere(pos=vector(-8,10,0), radius=1, color=color.green, make_trail = True)
+puck.vel = vec(0,0,0)
+puck.acc = vec(0,0,0)
+puck.q = qe
+puck.mass = 9.1093837e-31
+
+##I was trying to visualize all the vectors in field2D to see why it doesnt match, maybe you can get it working
+#r = 0
+#c = 0
+#for arr in field2D:
+#    r = r + 1
+#    c = 0
+#    for v in arr:
+#        c = c + 1
+#        print(v)
+#        test = arrow(pos=vector((r-20)*3,(c-20)*3,0), axis=v.hat*2, color=color.red, shaftwidth =1)
+
+#for k in range(-20,20):
+#    for l in range(-20,20):
+#        observe = vector(k*3,l*3,0)
+#        resultantY = arrow(pos=observe, axis=field2D[k][l] * 2, color=color.red, shaftwidth =.4)
+
+arrow(pos=vector(-15*3,-15*3,0), axis=field2D[-15][-15] * 10, color=color.white, shaftwidth =.4)
+arrow(pos=vector(-12*3,-16*3,0), axis=field2D[-16][-16] * 10, color=color.white, shaftwidth =.4)
+arrow(pos=vector(-17*3,-17*3,0), axis=field2D[-17][-17] * 10, color=color.white, shaftwidth =.4)
+
+
+while t>=0:
+    rate(1/dt)
+    closestA = vector(round(puck.pos.x /3),round(puck.pos.y /3),0)
+    #print(closestA)
+    f = puck.q * field2D[closestA.x][closestA.y]    # this sets net force in y direction equal to force of gravity
+    #test = arrow(pos=puck.pos, axis=f.hat* 10, color=color.green, shaftwidth =.3)
+    
+    puck.acc = f/puck.mass   # this sets accerlation in y direction
+    puck.vel = puck.vel + puck.acc*dt # first step of Euler Cromer Method, updates vy 
+    puck.pos = puck.pos + puck.vel*dt # first step of Euler Cromer Method, updates yy
+    
+#    yyDots.plot(t,yy)
+#    vyDots.plot(t,vy)
+    #print(t)
+    t = t + dt
+    
+    
 
 
 #E_arrow = arrow(pos=observation_pos, axis=r_hat * 2, color=color.red, shaftwidth =.6, opacity=E.mag / max_field)
