@@ -8,25 +8,24 @@ def changeStart(evt):
     global start
     if evt.text == 'Start':
         start = True
-        clrbtn.background = color.cyan
+        clrbtn.background = color.red
         clrbtn.text = 'Stop'
         print(start)
     else:
         start = False
         clrbtn.text = 'Start'
-        clrbtn.background = color.red
+        clrbtn.background = color.cyan
 
 def reset(evt):
-    print("reset")
-    #move puck to start location
-    #erase trace
+    puck.clear_trail()
+    puck.pos=vector(-100,0,0)
 
 def clear(evt):
     for obj in scene.objects: 
             obj.visible = False
     setup()
-    #reset
-    #remove all charged objects
+    init()
+    puck = sphere(pos=vector(-100,0,0), radius=2, color=vector(1, 0.753, 0.796), make_trail = True)
 
 def safe_hat(v):
     if v.mag == 0:
@@ -34,21 +33,7 @@ def safe_hat(v):
     else:
         return hat(v)
 
-def mass(evt):
-        console.log(evt)
-        if evt.id is 'm':
-                if (evt.value !=0):
-                    puck.mass = evt.value * 9.1093837e-31
-                    wt.text = '{:1.2f}'.format(evt.value)
-                    print(puck.mass)
-
-mslider = slider(bind=mass, max=20, min=1, step=1, value=1, id='m')
-
-wt = wtext(text='{:1.2f}'.format(mslider.value))
-
-scene.append_to_caption('x the mass of an electron  ')
-
-clrbtn = button( bind=changeStart, text='Start', background=color.red )
+clrbtn = button( bind=changeStart, text='Start', background=color.cyan )
 scene.append_to_caption(' ')
 re_button = button(bind=reset, text='Reset')
 scene.append_to_caption('      ')
@@ -69,24 +54,19 @@ scene.append_to_caption('   ')
 
 #puck=sphere(pos=vector(-4,-0.75,0), color=vector(1, 0.753, 0.796), radius = 2, q=qe, make_trail = True)
 def setup():
-    scene.width = 1200
-    scene.height = 700
+    scene.width = 1000
+    scene.height = 550
 #    scene.range = 3
     scene.userzoom = False
     scene.userspin = False
     scene.autoscale = True
     scene.background = color.white
-    #scene.camera.pos = vector(0,20,145)
-    #box on upper right
-#    v0 = vertex(pos=vector(0,60,0), color=color.white)
-#    v1 = vertex(pos=vector(60,60,0), color=color.white)
-#    v2 = vertex(pos=vector(70,6,0), color=color.white)
-#    v3 = vertex(pos=vector(0,76,0), color=color.white)
-#    quad(vs=[v0, v1, v2, v3])
     
     #border
-    curve(pos=[vector(-150, 70, 0), vector(150, 70, 0)], color=color.black)
-    curve(pos=[vector(-150, -100, 0), vector(150, -100, 0)], color=color.black)
+    curve(pos=[vector(-120, 60, 0), vector(120, 60, 0)], color=color.black)
+    curve(pos=[vector(-120, -60, 0), vector(120, -60, 0)], color=color.black)
+    curve(pos=[vector(-120, -60, 0), vector(-120, 60, 0)], color=color.black)
+    curve(pos=[vector(120, -60, 0), vector(120, 60, 0)], color=color.black)
     
     #lines in box
     curve(pos=[vector(44, 70, 0), vector(44, 86, 0)], color=color.white)
@@ -110,9 +90,9 @@ def setup():
     box(pos=vec(22, 82, 0), length=8, height=2, width=1, color=color.red)
     
     #lines for goal
-    curve(pos=[vector(60, -0.2, 0), vector(70, -0.2, 0)], color=color.white)
-    curve(pos=[vector(4.5, -0.2, 0), vector(4.5, -1.2, 0)], color=color.white)
-    curve(pos=[vector(4.25, -1.2, 0), vector(4.5, -1.2, 0)], color=color.white)
+    curve(pos=[vector(110, 10, 0), vector(115, 10, 0)], color=color.green)
+    curve(pos=[vector(115, -10, 0), vector(115, 10, 0)], color=color.green)
+    curve(pos=[vector(110, -10, 0), vector(115, -10, 0)], color=color.green)
     
     #puck=sphere(pos=vector(-4,-0.75,0), color=vector(1, 0.753, 0.796), size=0.3*vec(1,1,1), q=qe, make_trail = True)
 
@@ -160,7 +140,7 @@ def up():
     nonlocal drag, s
     drag = False
     if s != None:
-        if scene.mouse.pos.x >= 0 and scene.mouse.pos.x <= 60 and scene.mouse.pos.y >= 70 and scene.mouse.pos.y <= 86:
+        if scene.mouse.pos.x > 120 or scene.mouse.pos.x < -120 or scene.mouse.pos.y > 60 or scene.mouse.pos.y < -60:
             s.visible=False
             if s in balls:
                 balls.remove(s)
@@ -185,7 +165,7 @@ fieldA = [[0] * 40 for i in range(80)]
 t=0.00
 dt=0.01
 
-puck = sphere(pos=vector(-40,0,0), radius=2, color=color.green, make_trail = True)
+puck = sphere(pos=vector(-100,0,0), radius=2, color=vector(1, 0.753, 0.796), make_trail = True)
 puck.vel = vec(0,0,0)
 puck.acc = vec(0,0,0)
 puck.q = qe
@@ -206,37 +186,39 @@ count = 0;
 test = arrow(pos=puck.pos, axis=vector(0,0,0), color=color.green, shaftwidth =.3)
 
 #initialize arrows so calculateField can update attributes later
-for i in range(-40, 40):
-    for j in range(-20, 20):
-        global Emax
-        resultantE = vector(0,0,0)
-        observe = vector(i*3, j*3, 0)
-        for charge in balls:
-            rx = observe - charge.pos
-            if rx.mag > 1e-2:
-                Ex = (k * charge.q * safe_hat(rx)) / (rx.mag**2) #safe_hat makes Ex zero if it's too close to a source
-                resultantE += Ex
-        for rod in rods:
-            E = vector(0,0,0)
-            for a in range(-n/2, n/2):  # fix to integer
-                dr = vector(rod.pos.x, rod.pos.y + a * dx, rod.pos.z)
-                rx = observe - dr
+def init():
+    for i in range(-40, 40):
+        for j in range(-20, 20):
+            global Emax
+            resultantE = vector(0,0,0)
+            observe = vector(i*3, j*3, 0)
+            for charge in balls:
+                rx = observe - charge.pos
                 if rx.mag > 1e-2:
-                    Ex = (k * rod.q / n* safe_hat(rx)) / (rx.mag**2) #safe_hat makes Ex zero if it's too close to a source
-                    E += Ex
-            resultantE += E
-        E_hat = safe_hat(resultantE) 
-        #Emax = max(Emax, resultantE.mag)  # update max field magnitude
-        fieldE[i][j] = resultantE
-        #print(resultantE)
-        fieldA[i][j] = arrow(
-            pos=observe,
-            axis=E_hat * 3,
-            color=color.blue,
-            shaftwidth=0.6,
-            opacity=resultantE.mag / Emax * 4,
-            visible=True
-        )
+                    Ex = (k * charge.q * safe_hat(rx)) / (rx.mag**2) #safe_hat makes Ex zero if it's too close to a source
+                    resultantE += Ex
+            for rod in rods:
+                E = vector(0,0,0)
+                for a in range(-n/2, n/2):  # fix to integer
+                    dr = vector(rod.pos.x, rod.pos.y + a * dx, rod.pos.z)
+                    rx = observe - dr
+                    if rx.mag > 1e-2:
+                        Ex = (k * rod.q / n* safe_hat(rx)) / (rx.mag**2) #safe_hat makes Ex zero if it's too close to a source
+                        E += Ex
+                resultantE += E
+            E_hat = safe_hat(resultantE) 
+            #Emax = max(Emax, resultantE.mag)  # update max field magnitude
+            fieldE[i][j] = resultantE
+            #print(resultantE)
+            fieldA[i][j] = arrow(
+                pos=observe,
+                axis=E_hat * 3,
+                color=color.blue,
+                shaftwidth=0.6,
+                opacity=resultantE.mag / Emax * 4,
+                visible=True
+            )
+init()
 
 def calculateField():
     global Emax
@@ -280,17 +262,29 @@ def field(evt):
                 fieldA[k][l].visible = False
 
 fcheck = checkbox( bind=field, text='Field', checked=True)
+scene.append_to_caption('     ')
 
+def mass(evt):
+    console.log(evt)
+    if evt.id is 'm':
+        puck.mass = evt.value * 9.1093837e-31
+        wt.text = '{:1.2f}'.format(evt.value)
+
+mslider = slider(bind=mass, length=250, max=20, min=1, step=1, value=1, id='m')
+
+wt = wtext(text='{:1.2f}'.format(mslider.value))
+
+scene.append_to_caption('x the mass of an electron  ')
 
 
 while t>=0:
     rate(1000)
 
     if positive:
-        #puck.color=color.red
+        puck.color=vector(1, 0.753, 0.796)
         puck.q=qe
     else:
-        #puck.color=color.blue
+        puck.color=color.blue
         puck.q=-qe
     if start:
         closestA = vector(round(puck.pos.x /3),round(puck.pos.y /3),0)
