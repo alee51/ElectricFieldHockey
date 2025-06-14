@@ -298,6 +298,16 @@ while t>=0:
 
         t = t + dt
 
+        #bounce off border
+        if puck.pos.x - puck.radius <= -120 or puck.pos.x + puck.radius >= 120:
+            puck.vel.x = -puck.vel.x
+        if puck.pos.y - puck.radius <= -60 or puck.pos.y + puck.radius >= 60:
+            puck.vel.y = -puck.vel.y
+
+        #goal
+        if puck.pos.x + puck.radius <= 115 and puck.pos.x + puck.radius >= 110 and puck.pos.y + puck.radius <= 10 and puck.pos.y - puck.radius >= -10:
+            text(text='GOAL!', align='center', color=color.green)
+
 # notes:
 # might need small time step bc euler method is bad
 
