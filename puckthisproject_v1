@@ -14,6 +14,7 @@ def changeStart(evt):
 
 clrbtn = button( bind=changeStart, text='Start', background=color.red )
 
+
 k = 8.99e9
 qe = 1.6e-19
 
@@ -104,6 +105,15 @@ puck.mass = 9.1093837e-31
 arrow(pos=vector(-15*3,-15*3,0), axis=field2D[-15][-15] * 10, color=color.white, shaftwidth =.4)
 arrow(pos=vector(-12*3,-16*3,0), axis=field2D[-16][-16] * 10, color=color.white, shaftwidth =.4)
 arrow(pos=vector(-17*3,-17*3,0), axis=field2D[-17][-17] * 10, color=color.white, shaftwidth =.4)
+
+def trace(evt):
+        if evt.checked:
+                puck.make_trail = True
+        else:
+                puck.make_trail = False
+
+rcheck = checkbox( bind=trace, text='Trace', checked=True)
+
 
 count = 0;
 test = arrow(pos=puck.pos, axis=vector(0,0,0), color=color.green, shaftwidth =.3)
