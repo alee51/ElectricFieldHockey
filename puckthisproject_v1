@@ -61,6 +61,7 @@ def setup():
     scene.userzoom = True
     scene.userspin = True
     scene.autoscale = True
+    scene.background = color.white
     #scene.camera.pos = vector(0,20,145)
     #box on upper right
     v0 = vertex(pos=vector(0,60,0), color=color.white)
@@ -109,18 +110,18 @@ print(balls)
 def down():
     nonlocal drag, s
     if scene.mouse.pos.x >= 7.5 and scene.mouse.pos.x <= 16 and scene.mouse.pos.y >= 60 and scene.mouse.pos.y <= 76:
-        s = box(pos=scene.mouse.pos, length=2, height=8, width=1, color=color.red)
+        s = box(pos=scene.mouse.pos, length=2, height=8, width=1, color=color.red, q = qe)
         rods.append(s)
         for r in rods:
             print(r.pos)
     else if scene.mouse.pos.x > 0 and scene.mouse.pos.x <= 7.5 and scene.mouse.pos.y >= 60 and scene.mouse.pos.y <= 76:
-        s = box(pos=scene.mouse.pos, length=2, height=8, width=1, color=color.cyan)
+        s = box(pos=scene.mouse.pos, length=2, height=8, width=1, color=color.cyan, q = -qe)
         rods.append(s)
     else if scene.mouse.pos.x > 16 and scene.mouse.pos.x <= 28 and scene.mouse.pos.y >= 67.5 and scene.mouse.pos.y <= 76:
-        s = box(pos=scene.mouse.pos, length=8, height=2, width=0.1, color=color.red)
+        s = box(pos=scene.mouse.pos, length=8, height=2, width=0.1, color=color.red, q = qe)
         rods.append(s)
     else if scene.mouse.pos.x > 16 and scene.mouse.pos.x <= 28 and scene.mouse.pos.y >= 60 and scene.mouse.pos.y <= 67.5:
-        s = box(pos=scene.mouse.pos, length=8, height=2, width=0.1, color=color.cyan)
+        s = box(pos=scene.mouse.pos, length=8, height=2, width=0.1, color=color.cyan, q = -qe)
         rods.append(s)
     else if scene.mouse.pos.x > 28 and scene.mouse.pos.x <= 44 and scene.mouse.pos.y >= 60 and scene.mouse.pos.y <= 76:
         s = sphere(pos=scene.mouse.pos, color=color.red, radius=2, q = qe)
@@ -173,13 +174,13 @@ dx = 8 / n
 #dq = qe / n
 Emax = 5.7536e-11
 
-fieldE = [[vector(0,0,0) for _ in range(40)] for _ in range(40)]
-fieldA = [[0] * 40 for i in range(40)]
+fieldE = [[vector(0,0,0) for _ in range(40)] for _ in range(80)]
+fieldA = [[0] * 40 for i in range(80)]
     
 t=0.00
 dt=0.01
 
-puck = sphere(pos=vector(-20,10,0), radius=4, color=color.red, make_trail = True)
+puck = sphere(pos=vector(-20,10,0), radius=2, color=color.green, make_trail = True)
 puck.vel = vec(0,0,0)
 puck.acc = vec(0,0,0)
 puck.q = qe
@@ -227,9 +228,11 @@ test = arrow(pos=puck.pos, axis=vector(0,0,0), color=color.green, shaftwidth =.3
 #            fieldE[i][j] = resultantE
 #            #field2D[i+20][j+20] = E_hat
 #            fieldA[i][j] = arrow(pos=observe, axis=E_hat * 3, color=color.blue, shaftwidth =.6, opacity=resultantE.mag / Emax * 3, visible = True)
-#     
-for i in range(-20, 20):
+     
+#initialize arrows so calculateField can update attributes later
+for i in range(-40, 40):
     for j in range(-20, 20):
+        global Emax
         resultantE = vector(0,0,0)
         observe = vector(i*3, j*3, 0)
         for charge in balls:
@@ -246,19 +249,22 @@ for i in range(-20, 20):
                 E += Ex
             resultantE += E
         E_hat = safe_hat(resultantE)
-        Emax = max(Emax, resultantE.mag)  # update max field magnitude
+        #Emax = max(Emax, resultantE.mag)  # update max field magnitude
         fieldE[i][j] = resultantE
+        #print(resultantE)
         fieldA[i][j] = arrow(
             pos=observe,
             axis=E_hat * 3,
             color=color.blue,
             shaftwidth=0.6,
-            
+            opacity=resultantE.mag / Emax * 4,
             visible=True
         )
 
 def calculateField(evt): #If in loop, would crash
-    for i in range(-20, 20):
+    global Emax
+    #print(Emax)
+    for i in range(-40, 40):
         for j in range(-20, 20):
             resultantE = vector(0,0,0)
             observe = vector(i*3, j*3, 0)
@@ -276,9 +282,10 @@ def calculateField(evt): #If in loop, would crash
                     E += Ex
                 resultantE += E
             E_hat = safe_hat(resultantE)
-            Emax = max(Emax, resultantE.mag)  # update max field magnitude
+            #Emax = max(Emax, resultantE.mag)  # update max field magnitude
             fieldE[i][j] = resultantE
             fieldA[i][j].axis=E_hat * 3
+            fieldA[i][j].opacity=resultantE.mag / Emax * 4
     
 
 cField = button( bind=calculateField, text='calculate Field', background=color.green )
@@ -314,12 +321,12 @@ cField = button( bind=calculateField, text='calculate Field', background=color.g
 
 def field(evt):
         if evt.checked:
-            for k in range(-20,20):
+            for k in range(-40,40):
                 for l in range(-20,20):  
                     fieldA[k][l].visible = True
 
         else:
-            for k in range(-20,20):
+            for k in range(-40,40):
                 for l in range(-20,20):  
                     fieldA[k][l].visible = False
 
@@ -331,10 +338,10 @@ while t>=0:
     rate(1000)
 
     if positive:
-        puck.color=color.red
+        #puck.color=color.red
         puck.q=qe
     else:
-        puck.color=color.blue
+        #puck.color=color.blue
         puck.q=-qe
     if start:
         closestA = vector(round(puck.pos.x /3),round(puck.pos.y /3),0)
