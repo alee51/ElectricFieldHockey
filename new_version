@@ -1,0 +1,296 @@
+Web VPython 3.2
+k = 8.99e9
+qe = 1.6e-19
+
+start = False
+
+def changeStart(evt):
+    global start
+    if evt.text == 'Start':
+        start = True
+        clrbtn.background = color.cyan
+        clrbtn.text = 'Stop'
+        print(start)
+    else:
+        start = False
+        clrbtn.text = 'Start'
+        clrbtn.background = color.red
+
+def reset(evt):
+    print("reset")
+    #move puck to start location
+    #erase trace
+
+def clear(evt):
+    for obj in scene.objects: 
+            obj.visible = False
+    setup()
+    #reset
+    #remove all charged objects
+
+def safe_hat(v):
+    if v.mag == 0:
+        return vector(0,0,0)
+    else:
+        return hat(v)
+        
+clrbtn = button( bind=changeStart, text='Start', background=color.red )
+scene.append_to_caption(' ')
+re_button = button(bind=reset, text='Reset')
+scene.append_to_caption('      ')
+cl_button = button(bind=clear, text='Clear')
+scene.append_to_caption('      ')
+
+positive = True
+
+def puck_sign(evt):
+    global positive
+    if evt.checked:
+        positive=True
+    else:
+        positive=False
+
+sign_check = checkbox(bind=puck_sign, text='Puck is positive', checked=True)
+scene.append_to_caption('   ')
+
+#puck=sphere(pos=vector(-4,-0.75,0), color=vector(1, 0.753, 0.796), radius = 2, q=qe, make_trail = True)
+def setup():
+    scene.width = 1200
+    scene.height = 700
+#    scene.range = 3
+    scene.userzoom = False
+    scene.userspin = False
+    scene.autoscale = True
+    scene.background = color.white
+    #scene.camera.pos = vector(0,20,145)
+    #box on upper right
+#    v0 = vertex(pos=vector(0,60,0), color=color.white)
+#    v1 = vertex(pos=vector(60,60,0), color=color.white)
+#    v2 = vertex(pos=vector(70,6,0), color=color.white)
+#    v3 = vertex(pos=vector(0,76,0), color=color.white)
+#    quad(vs=[v0, v1, v2, v3])
+    
+    #border
+    curve(pos=[vector(-150, 70, 0), vector(150, 70, 0)], color=color.black)
+    curve(pos=[vector(-150, -100, 0), vector(150, -100, 0)], color=color.black)
+    
+    #lines in box
+    curve(pos=[vector(44, 70, 0), vector(44, 86, 0)], color=color.white)
+    curve(pos=[vector(16, 70, 0), vector(16, 86, 0)], color=color.white)
+    curve(pos=[vector(28, 70, 0), vector(28, 86, 0)], color=color.white)
+    
+    #objects in box
+    for i in range(3):
+        for j in range(3):
+            sphere(pos=vector(32+i*4, 74+j*4, 0), color=color.red, radius = 2)
+    for i in range(3):
+        for j in range(3):
+            sphere(pos=vector(48+i*4, 74+j*4, 0), color=color.cyan, radius = 2)
+    box(pos=vec(3, 78, 0), length=2, height=8, width=1, color=color.cyan)
+    box(pos=vec(6, 78, 0), length=2, height=8, width=1, color=color.cyan)
+    box(pos=vec(9, 78, 0), length=2, height=8, width=1, color=color.red)
+    box(pos=vec(12, 78, 0), length=2, height=8, width=1, color=color.red)
+    box(pos=vec(22, 73, 0), length=8, height=2, width=1, color=color.cyan)
+    box(pos=vec(22, 76, 0), length=8, height=2, width=1, color=color.cyan)
+    box(pos=vec(22, 79, 0), length=8, height=2, width=1, color=color.red)
+    box(pos=vec(22, 82, 0), length=8, height=2, width=1, color=color.red)
+    
+    #lines for goal
+    curve(pos=[vector(60, -0.2, 0), vector(70, -0.2, 0)], color=color.white)
+    curve(pos=[vector(4.5, -0.2, 0), vector(4.5, -1.2, 0)], color=color.white)
+    curve(pos=[vector(4.25, -1.2, 0), vector(4.5, -1.2, 0)], color=color.white)
+    
+    #puck=sphere(pos=vector(-4,-0.75,0), color=vector(1, 0.753, 0.796), size=0.3*vec(1,1,1), q=qe, make_trail = True)
+
+
+setup()
+drag = False
+s = None # declare s to be used below
+#sphere(pos=scene.mouse.pos, color=color.red, size=0.2*vec(1,1,1))
+
+balls = []
+rods = []
+print(balls)
+def down():
+    nonlocal drag, s
+    if scene.mouse.pos.x >= 7.5 and scene.mouse.pos.x <= 16 and scene.mouse.pos.y >= 70 and scene.mouse.pos.y <= 86:
+        s = box(pos=scene.mouse.pos, length=2, height=8, width=1, color=color.red, q = qe)
+        rods.append(s)
+    else if scene.mouse.pos.x > 0 and scene.mouse.pos.x <= 7.5 and scene.mouse.pos.y >= 70 and scene.mouse.pos.y <= 86:
+        s = box(pos=scene.mouse.pos, length=2, height=8, width=1, color=color.cyan, q = -qe)
+        rods.append(s)
+    else if scene.mouse.pos.x > 16 and scene.mouse.pos.x <= 28 and scene.mouse.pos.y >= 77.5 and scene.mouse.pos.y <= 86:
+        s = box(pos=scene.mouse.pos, length=8, height=2, width=0.1, color=color.red, q = qe)
+        rods.append(s)
+    else if scene.mouse.pos.x > 16 and scene.mouse.pos.x <= 28 and scene.mouse.pos.y >= 70 and scene.mouse.pos.y <= 77.5:
+        s = box(pos=scene.mouse.pos, length=8, height=2, width=0.1, color=color.cyan, q = -qe)
+        rods.append(s)
+    else if scene.mouse.pos.x > 28 and scene.mouse.pos.x <= 44 and scene.mouse.pos.y >= 70 and scene.mouse.pos.y <= 86:
+        s = sphere(pos=scene.mouse.pos, color=color.red, radius=2, q = qe)
+        balls.append(s)
+    else if scene.mouse.pos.x > 44 and scene.mouse.pos.x <= 60 and scene.mouse.pos.y >= 70 and scene.mouse.pos.y <= 86:
+        s = sphere(pos=scene.mouse.pos, color=color.cyan, radius=2, q = -qe)
+        balls.append(s)
+    else:
+        if not isinstance(scene.mouse.pick, arrow) and scene.mouse.pick.color != color.green:
+            s = scene.mouse.pick
+    if s != None:
+        drag = True
+
+def move():
+    nonlocal drag, s
+    if drag and s: # mouse button is down
+        s.pos = scene.mouse.pos
+
+def up():
+    nonlocal drag, s
+    drag = False
+    if s != None:
+        if scene.mouse.pos.x >= 0 and scene.mouse.pos.x <= 60 and scene.mouse.pos.y >= 70 and scene.mouse.pos.y <= 86:
+            s.visible=False
+            if s in balls:
+                balls.remove(s)
+            if s in rods:
+                rods.remove(s)
+        calculateField()
+
+scene.bind("mousedown", down)
+
+scene.bind("mousemove", move)
+
+scene.bind("mouseup", up)
+
+n = 100
+dx = 8 / n
+#dq = qe / n
+Emax = 5.7536e-11
+
+fieldE = [[vector(0,0,0) for _ in range(40)] for _ in range(80)]
+fieldA = [[0] * 40 for i in range(80)]
+    
+t=0.00
+dt=0.01
+
+puck = sphere(pos=vector(-40,0,0), radius=2, color=color.green, make_trail = True)
+puck.vel = vec(0,0,0)
+puck.acc = vec(0,0,0)
+puck.q = qe
+puck.mass = 9.1093837e-31
+
+def trace(evt):
+    if evt.checked:
+        puck.make_trail = True
+    else:
+        puck.make_trail = False
+        puck.clear_trail()
+
+tcheck = checkbox( bind=trace, text='Trace', checked=True)
+scene.append_to_caption('   ')
+
+            
+count = 0;
+test = arrow(pos=puck.pos, axis=vector(0,0,0), color=color.green, shaftwidth =.3)
+
+#initialize arrows so calculateField can update attributes later
+for i in range(-40, 40):
+    for j in range(-20, 20):
+        global Emax
+        resultantE = vector(0,0,0)
+        observe = vector(i*3, j*3, 0)
+        for charge in balls:
+            rx = observe - charge.pos
+            if rx.mag != 0:
+                Ex = (k * charge.q * safe_hat(rx)) / (rx.mag**2)
+                resultantE += Ex
+        for rod in rods:
+            E = vector(0,0,0)
+            for a in range(-n/2, n/2):  # fix to integer
+                dr = vector(rod.pos.x, rod.pos.y + a * dx, rod.pos.z)
+                rx = observe - dr
+                Ex = (k * rod.q / n* safe_hat(rx)) / (rx.mag**2)
+                E += Ex
+            resultantE += E
+        E_hat = safe_hat(resultantE)
+        #Emax = max(Emax, resultantE.mag)  # update max field magnitude
+        fieldE[i][j] = resultantE
+        #print(resultantE)
+        fieldA[i][j] = arrow(
+            pos=observe,
+            axis=E_hat * 3,
+            color=color.blue,
+            shaftwidth=0.6,
+            opacity=resultantE.mag / Emax * 4,
+            visible=True
+        )
+
+def calculateField():
+    global Emax
+    #print(Emax)
+    for i in range(-40, 40):
+        for j in range(-20, 20):
+            resultantE = vector(0,0,0)
+            observe = vector(i*3, j*3, 0)
+            for charge in balls:
+                rx = observe - charge.pos
+                if rx.mag != 0:
+                    Ex = (k * charge.q * safe_hat(rx)) / (rx.mag**2)
+                    resultantE += Ex
+            for rod in rods:
+                E = vector(0,0,0)
+                for a in range(-n/2, n/2):  # fix to integer
+                    dr = vector(rod.pos.x, rod.pos.y + a * dx, rod.pos.z)
+                    rx = observe - dr
+                    Ex = (k * rod.q / n* safe_hat(rx)) / (rx.mag**2)
+                    E += Ex
+                resultantE += E
+            E_hat = safe_hat(resultantE)
+            #Emax = max(Emax, resultantE.mag)  # update max field magnitude
+            fieldE[i][j] = resultantE
+            fieldA[i][j].axis=E_hat * 3
+            fieldA[i][j].opacity=resultantE.mag / Emax * 4
+
+def field(evt):
+    if evt.checked:
+        for k in range(-40,40):
+            for l in range(-20,20):  
+                fieldA[k][l].visible = True
+
+    else:
+        for k in range(-40,40):
+            for l in range(-20,20):  
+                fieldA[k][l].visible = False
+
+fcheck = checkbox( bind=field, text='Field', checked=True)
+
+
+
+while t>=0:
+    rate(1000)
+
+    if positive:
+        #puck.color=color.red
+        puck.q=qe
+    else:
+        #puck.color=color.blue
+        puck.q=-qe
+    if start:
+        closestA = vector(round(puck.pos.x /3),round(puck.pos.y /3),0)
+        f = puck.q * fieldE[closestA.x][closestA.y]    # this sets net force in y direction equal to force of gravity   
+            
+        test.pos = puck.pos
+        test.axis = f.hat* 10
+        puck.acc = f/puck.mass   # this sets accerlation in y direction
+        puck.vel = puck.vel + puck.acc*dt # first step of Euler Cromer Method, updates vy 
+        puck.pos = puck.pos + puck.vel*dt # first step of Euler Cromer Method, updates yy
+
+        t = t + dt
+
+# notes:
+# might need small time step bc euler method is bad
+
+arrow(pos=vector(-15*3,-15*3,0), axis=fieldE[-15][-15] * 10, color=color.white, shaftwidth =.4)
+arrow(pos=vector(-12*3,-16*3,0), axis=fieldE[-16][-16] * 10, color=color.white, shaftwidth =.4)
+arrow(pos=vector(-17*3,-17*3,0), axis=fieldE[-17][-17] * 10, color=color.white, shaftwidth =.4)
+
+
+#E_arrow = arrow(pos=observation_pos, axis=r_hat * 2, color=color.red, shaftwidth =.6, opacity=E.mag / max_field)
