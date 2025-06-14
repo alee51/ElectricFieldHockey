@@ -1,21 +1,35 @@
 Web VPython 3.2
 #scene.background = color.white
+start = False
+def changeStart(evt):
+        global start
+        if evt.text == 'Start':
+                start = True
+                clrbtn.background = color.cyan
+                clrbtn.text = 'Stop'
+        else:
+                start = False
+                clrbtn.text = 'Start'
+                clrbtn.background = color.red
+
+clrbtn = button( bind=changeStart, text='Start', background=color.red )
 
 k = 8.99e9
 qe = 1.6e-19
 
-ball1 = sphere(pos=vector(0,0,0), radius=2, color=color.red)
-ball2 = sphere(pos=vector(20,7,0), radius=2, color=color.red)
-ball3 = sphere(pos=vector(-30,7,0), radius=2, color=color.red)
+ball1 = sphere(pos=vector(0,0,0), radius=2, color=color.cyan, q = -qe)
+ball2 = sphere(pos=vector(20,7,0), radius=2, color=color.red, q = qe)
+ball3 = sphere(pos=vector(-30,7,0), radius=2, color=color.red, q = qe)
 balls = []
 balls.append(ball1)
 balls.append(ball2)
 balls.append(ball3)
 
-rod1 = box(pos=vec(0, -18, 0), length=2, height=6, width=1, color=color.cyan)
-rod2 = box(pos=vec(8, 10, 0), length=2, height=6, width=1, color=color.red)
-rod3 = box(pos=vec(0, 14, 0), length=2, height=6, width=1, color=color.red)
-rod4 = box(pos=vec(40, 8, 0), length=2, height=6, width=1, color=color.red)
+rod1 = box(pos=vec(0, -18, 0), length=2, height=6, width=1, color=color.red, q = qe)
+#rod2 = box(pos=vec(8, 10, 0), length=2, height=6, width=1, color=color.red, q = qe)
+rod2 = box(pos=vec(8, 10, 0), length=2, height=6, width=1, color=color.cyan, q = -qe)
+rod3 = box(pos=vec(0, 14, 0), length=2, height=6, width=1, color=color.red, q = qe)
+rod4 = box(pos=vec(40, 8, 0), length=2, height=6, width=1, color=color.red, q = qe)
 rods = []
 rods.append(rod1)
 rods.append(rod2)
@@ -24,7 +38,7 @@ rods.append(rod4)
 
 n = 100
 dx = rod1.height / n
-dq = qe / n
+#dq = qe / n
 Emax = 5.7536e-11
 
 field2D = [[0] * 40 for i in range(40)]
@@ -34,7 +48,7 @@ for i in range(-20,20):
         observe = vector(i*3,j*3,0)
         for charge in balls:
             rx = observe - charge.pos
-            Ex = (k * qe * hat(rx)) / (rx.mag**2)
+            Ex = (k * charge.q * hat(rx)) / (rx.mag**2)
             resultantE = resultantE + Ex
         for rod in rods:
             E = vector(0,0,0)
@@ -42,10 +56,10 @@ for i in range(-20,20):
             for a in range(-n/2,n/2):
                 # change y or x depending on dividing height or width
                 dr =  vector(rod.pos.x, rod.pos.y + a * dx, rod.pos.z)
-                #if i == 0 and j == 0: 
-                   # print(dr)
-                rx =  observe - dr
-                Ex = (k * dq * hat(rx)) / (rx.mag**2)
+
+                rx =  observe - dr# + vector(0.01,.01,.01)
+                
+                Ex = (k * rod.q / n * hat(rx)) / (rx.mag**2)
                 E = E + Ex
             resultantE = resultantE + E
         E_hat = hat(resultantE)
@@ -63,9 +77,9 @@ def handle_mousedown(evt):
 scene.bind('mousedown', handle_mousedown)
 
 t=0.00
-dt=0.05
+dt=0.01
 
-puck = sphere(pos=vector(-8,10,0), radius=1, color=color.green, make_trail = True)
+puck = sphere(pos=vector(-20,10,0), radius=1, color=color.green, make_trail = True)
 puck.vel = vec(0,0,0)
 puck.acc = vec(0,0,0)
 puck.q = qe
@@ -91,24 +105,32 @@ arrow(pos=vector(-15*3,-15*3,0), axis=field2D[-15][-15] * 10, color=color.white,
 arrow(pos=vector(-12*3,-16*3,0), axis=field2D[-16][-16] * 10, color=color.white, shaftwidth =.4)
 arrow(pos=vector(-17*3,-17*3,0), axis=field2D[-17][-17] * 10, color=color.white, shaftwidth =.4)
 
-
+count = 0;
+test = arrow(pos=puck.pos, axis=vector(0,0,0), color=color.green, shaftwidth =.3)
 while t>=0:
-    rate(1/dt)
-    closestA = vector(round(puck.pos.x /3),round(puck.pos.y /3),0)
-    #print(closestA)
-    f = puck.q * field2D[closestA.x][closestA.y]    # this sets net force in y direction equal to force of gravity
-    #test = arrow(pos=puck.pos, axis=f.hat* 10, color=color.green, shaftwidth =.3)
-    
-    puck.acc = f/puck.mass   # this sets accerlation in y direction
-    puck.vel = puck.vel + puck.acc*dt # first step of Euler Cromer Method, updates vy 
-    puck.pos = puck.pos + puck.vel*dt # first step of Euler Cromer Method, updates yy
-    
+    rate(1000)
+    if start:
+        closestA = vector(round(puck.pos.x /3),round(puck.pos.y /3),0)
+        #print(closestA)
+        f = puck.q * field2D[closestA.x][closestA.y]    # this sets net force in y direction equal to force of gravity
+    #    arrows = []
+        print(t)
+        if (f.mag > 1e-29):
+            f = vector(0,0,0)
+            
+        test.pos = puck.pos
+        test.axis = f.hat* 10
+        puck.acc = f/puck.mass   # this sets accerlation in y direction
+        puck.vel = puck.vel + puck.acc*dt # first step of Euler Cromer Method, updates vy 
+        puck.pos = puck.pos + puck.vel*dt # first step of Euler Cromer Method, updates yy
+        
 #    yyDots.plot(t,yy)
 #    vyDots.plot(t,vy)
     #print(t)
-    t = t + dt
-    
-    
+        t = t + dt
+        
+#        if ( t> 5):
+#            puck.vel = vector(0,0,0)
 
 
 #E_arrow = arrow(pos=observation_pos, axis=r_hat * 2, color=color.red, shaftwidth =.6, opacity=E.mag / max_field)
