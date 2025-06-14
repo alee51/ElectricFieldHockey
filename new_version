@@ -37,10 +37,12 @@ def safe_hat(v):
 def mass(evt):
         console.log(evt)
         if evt.id is 'm':
-                puck.mass = evt.value * 9.1093837e-31
-                wt.text = '{:1.2f}'.format(evt.value)
+                if (evt.value !=0):
+                    puck.mass = evt.value * 9.1093837e-31
+                    wt.text = '{:1.2f}'.format(evt.value)
+                    print(puck.mass)
 
-mslider = slider(bind=mass, max=10, min=1, step=1, value=1, id='m')
+mslider = slider(bind=mass, max=20, min=1, step=1, value=1, id='m')
 
 wt = wtext(text='{:1.2f}'.format(mslider.value))
 
@@ -211,18 +213,19 @@ for i in range(-40, 40):
         observe = vector(i*3, j*3, 0)
         for charge in balls:
             rx = observe - charge.pos
-            if rx.mag != 0:
-                Ex = (k * charge.q * safe_hat(rx)) / (rx.mag**2)
+            if rx.mag > 1e-2:
+                Ex = (k * charge.q * safe_hat(rx)) / (rx.mag**2) #safe_hat makes Ex zero if it's too close to a source
                 resultantE += Ex
         for rod in rods:
             E = vector(0,0,0)
             for a in range(-n/2, n/2):  # fix to integer
                 dr = vector(rod.pos.x, rod.pos.y + a * dx, rod.pos.z)
                 rx = observe - dr
-                Ex = (k * rod.q / n* safe_hat(rx)) / (rx.mag**2)
-                E += Ex
+                if rx.mag > 1e-2:
+                    Ex = (k * rod.q / n* safe_hat(rx)) / (rx.mag**2) #safe_hat makes Ex zero if it's too close to a source
+                    E += Ex
             resultantE += E
-        E_hat = safe_hat(resultantE)
+        E_hat = safe_hat(resultantE) 
         #Emax = max(Emax, resultantE.mag)  # update max field magnitude
         fieldE[i][j] = resultantE
         #print(resultantE)
@@ -250,7 +253,11 @@ def calculateField():
             for rod in rods:
                 E = vector(0,0,0)
                 for a in range(-n/2, n/2):  # fix to integer
-                    dr = vector(rod.pos.x, rod.pos.y + a * dx, rod.pos.z)
+                    dr = vector(rod.pos.x, rod.pos.y , rod.pos.z)
+                    if (rod.length > rod.height):
+                        dr.x = dr.x + a * dx
+                    else:
+                        dr.y = dr.y + a * dx
                     rx = observe - dr
                     Ex = (k * rod.q / n* safe_hat(rx)) / (rx.mag**2)
                     E += Ex
