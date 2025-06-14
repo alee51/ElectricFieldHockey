@@ -1,6 +1,7 @@
 Web VPython 3.2
 #scene.background = color.white
 start = False
+
 def changeStart(evt):
         global start
         if evt.text == 'Start':
@@ -42,7 +43,8 @@ dx = rod1.height / n
 #dq = qe / n
 Emax = 5.7536e-11
 
-field2D = [[0] * 40 for i in range(40)]
+fieldE = [[0] * 40 for i in range(40)]
+fieldA = [[0] * 40 for i in range(40)]
 for i in range(-20,20):
     for j in range(-20,20):
         resultantE = vector(0,0,0);
@@ -57,16 +59,15 @@ for i in range(-20,20):
             for a in range(-n/2,n/2):
                 # change y or x depending on dividing height or width
                 dr =  vector(rod.pos.x, rod.pos.y + a * dx, rod.pos.z)
-
                 rx =  observe - dr# + vector(0.01,.01,.01)
-                
                 Ex = (k * rod.q / n * hat(rx)) / (rx.mag**2)
                 E = E + Ex
             resultantE = resultantE + E
+        
         E_hat = hat(resultantE)
+        fieldE[i][j] = resultantE
         #field2D[i+20][j+20] = E_hat
-        field2D[i][j] = resultantE
-        resultantA = arrow(pos=observe, axis=E_hat * 3, color=color.blue, shaftwidth =.6, opacity=resultantE.mag / Emax * 3)
+        fieldA[i][j] = arrow(pos=observe, axis=E_hat * 3, color=color.blue, shaftwidth =.6, opacity=resultantE.mag / Emax * 3, visible = False)
         #resultantX = arrow(pos=observe, axis=field2D[i][j] * 2, color=color.green, shaftwidth =.4)
 
 #for row in field2D:
@@ -97,23 +98,32 @@ puck.mass = 9.1093837e-31
 #        print(v)
 #        test = arrow(pos=vector((r-20)*3,(c-20)*3,0), axis=v.hat*2, color=color.red, shaftwidth =1)
 
-#for k in range(-20,20):
-#    for l in range(-20,20):
-#        observe = vector(k*3,l*3,0)
-#        resultantY = arrow(pos=observe, axis=field2D[k][l] * 2, color=color.red, shaftwidth =.4)
 
-arrow(pos=vector(-15*3,-15*3,0), axis=field2D[-15][-15] * 10, color=color.white, shaftwidth =.4)
-arrow(pos=vector(-12*3,-16*3,0), axis=field2D[-16][-16] * 10, color=color.white, shaftwidth =.4)
-arrow(pos=vector(-17*3,-17*3,0), axis=field2D[-17][-17] * 10, color=color.white, shaftwidth =.4)
+arrow(pos=vector(-15*3,-15*3,0), axis=fieldE[-15][-15] * 10, color=color.white, shaftwidth =.4)
+arrow(pos=vector(-12*3,-16*3,0), axis=fieldE[-16][-16] * 10, color=color.white, shaftwidth =.4)
+arrow(pos=vector(-17*3,-17*3,0), axis=fieldE[-17][-17] * 10, color=color.white, shaftwidth =.4)
 
 def trace(evt):
         if evt.checked:
                 puck.make_trail = True
         else:
                 puck.make_trail = False
+                puck.clear_trail()
 
-rcheck = checkbox( bind=trace, text='Trace', checked=True)
+tcheck = checkbox( bind=trace, text='Trace', checked=True)
 
+def field(evt):
+        if evt.checked:
+            for k in range(-20,20):
+                for l in range(-20,20):  
+                    fieldA[k][l].visible = True
+
+        else:
+            for k in range(-20,20):
+                for l in range(-20,20):  
+                    fieldA[k][l].visible = False
+
+fcheck = checkbox( bind=field, text='Field', checked=False)
 
 count = 0;
 test = arrow(pos=puck.pos, axis=vector(0,0,0), color=color.green, shaftwidth =.3)
@@ -122,7 +132,7 @@ while t>=0:
     if start:
         closestA = vector(round(puck.pos.x /3),round(puck.pos.y /3),0)
         #print(closestA)
-        f = puck.q * field2D[closestA.x][closestA.y]    # this sets net force in y direction equal to force of gravity
+        f = puck.q * fieldE[closestA.x][closestA.y]    # this sets net force in y direction equal to force of gravity
     #    arrows = []
         print(t)
         if (f.mag > 1e-29):
@@ -138,7 +148,8 @@ while t>=0:
 #    vyDots.plot(t,vy)
     #print(t)
         t = t + dt
-        
+    
+
 #        if ( t> 5):
 #            puck.vel = vector(0,0,0)
 
