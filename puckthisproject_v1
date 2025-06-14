@@ -62,6 +62,7 @@ def setup():
     scene.userspin = True
     scene.autoscale = True
     scene.background = color.white
+    box(pos=vec(0,0,-1), length=240, height=120, width=.1, color=color.gray(0.8))
     #scene.camera.pos = vector(0,20,145)
     #box on upper right
     v0 = vertex(pos=vector(0,60,0), color=color.white)
