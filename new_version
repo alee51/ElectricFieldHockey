@@ -33,7 +33,19 @@ def safe_hat(v):
         return vector(0,0,0)
     else:
         return hat(v)
-        
+
+def mass(evt):
+        console.log(evt)
+        if evt.id is 'm':
+                puck.mass = evt.value * 9.1093837e-31
+                wt.text = '{:1.2f}'.format(evt.value)
+
+mslider = slider(bind=mass, max=10, min=1, step=1, value=1, id='m')
+
+wt = wtext(text='{:1.2f}'.format(mslider.value))
+
+scene.append_to_caption('x the mass of an electron  ')
+
 clrbtn = button( bind=changeStart, text='Start', background=color.red )
 scene.append_to_caption(' ')
 re_button = button(bind=reset, text='Reset')
