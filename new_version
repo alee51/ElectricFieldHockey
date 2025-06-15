@@ -2,6 +2,11 @@ Web VPython 3.2
 k = 8.99e9
 qe = 1.6e-19
 
+def handle_mousedown(evt):
+  print("Mouse down at:", scene.mouse.pos)
+
+scene.bind('mousedown', handle_mousedown)
+
 start = False
 goal = False
 def changeStart(evt):
@@ -318,7 +323,27 @@ o1 = checkbox( bind=obstacle1, text='Add Obstacle', checked=False)
 scene.append_to_caption('     ')
 
 trap = False
-trapObj = [sphere(pos=vector(-20,10,0), color=color.red, radius=2, q = qe, visible = False)]
+trapObj = [sphere(pos=vector(-91,-28,0), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector(-101.135, -25.801, 0 ), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector(-111.799, -16.513, 0), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector(-115.583, -3.78498, 0), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector(-117.303, 8.25502, 0 ), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector( -117.303, 17.543, 0), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector( -110.079, 27.519, 0), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector( -98.383, 28.207, 0), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector(-93.223, 31.991, 0), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector( -87.375, 34.399, 0 ), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector(-76.711, 27.175, 0 ), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector( -67.767, 26.143, 0 ), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector(-61.231, 17.887, 0 ), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector(-56.415, 12.727, 0  ), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector( -58.479, -0.344977, 0), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector(-61.919, -9.28898, 0 ), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector( -72.583, -15.481, 0), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector( -81.527, -20.297, 0), color=color.red, radius=2, q = qe, visible = False),
+    sphere(pos=vector(-82.559, 8.94302, 0 ), color=color.cyan, radius=2, q = -qe, visible = False),
+    
+    ]
 def ftrap(evt):
     global trap
     if evt.checked:
