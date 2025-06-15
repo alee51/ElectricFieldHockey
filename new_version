@@ -3,7 +3,7 @@ k = 8.99e9
 qe = 1.6e-19
 
 start = False
-
+goal = False
 def changeStart(evt):
     global start
     if evt.text == 'Start':
@@ -17,12 +17,15 @@ def changeStart(evt):
         clrbtn.background = color.cyan
 
 def reset(evt):
+    #print(f'mass={puck.mass}, charge={puck.q}, vel={puck.vel.mag}, acc={puck.acc.mag}')
     puck.clear_trail()
     puck.pos=vector(-100,0,0)
     puck.vel=vector(0,0,0)
     puck.acc=vector(0,0,0)
     puck.mass = 9.1093837e-31
     test.axis = vector(0,0,0)
+    
+
 
 def clear(evt):
     global rods,balls
@@ -48,7 +51,7 @@ def clear(evt):
     #puck = sphere(pos=vector(-100,0,0), radius=2, color=vector(1, 0.753, 0.796), make_trail = True)
 
 def safe_hat(v):
-    if v.mag == 0:
+    if v.mag < 1e-29:
         return vector(0,0,0)
     else:
         return hat(v)
@@ -149,7 +152,7 @@ def down():
         s = sphere(pos=scene.mouse.pos, color=color.cyan, radius=2, q = -qe)
         balls.append(s)
     else:
-        if not isinstance(scene.mouse.pick, arrow) and scene.mouse.pick.color != color.green:
+        if not isinstance(scene.mouse.pick, arrow) and mag(scene.mouse.pos - puck.pos) > puck.radius :
             s = scene.mouse.pick
     if s != None:
         drag = True
@@ -186,7 +189,7 @@ fieldE = [[vector(0,0,0) for _ in range(40)] for _ in range(80)]
 fieldA = [[0] * 40 for i in range(80)]
     
 t=0.00
-dt=0.01
+dt=0.0001
 
 puck = sphere(pos=vector(-100,0,0), radius=2, color=vector(1, 0.753, 0.796), make_trail = True)
 puck.vel = vec(0,0,0)
@@ -204,14 +207,7 @@ def trace(evt):
 tcheck = checkbox( bind=trace, text='Trace', checked=True)
 scene.append_to_caption('   ')
 
-def showF(evt):
-    if evt.checked:
-        test.visible = True
-    else:
-        test.visible = False
 
-showfcheck = checkbox( bind=showF, text='Show Force', checked=True)
-scene.append_to_caption('   ')
             
 count = 0;
 test = arrow(pos=puck.pos, axis=vector(0,0,0), color=puck.color, shaftwidth =.6)
@@ -225,7 +221,7 @@ def init():
             observe = vector(i*3, j*3, 0)
             for charge in balls:
                 rx = observe - charge.pos
-                if rx.mag > 1e-2:
+                if rx.mag > 1e-1:
                     Ex = (k * charge.q * safe_hat(rx)) / (rx.mag**2) #safe_hat makes Ex zero if it's too close to a source
                     resultantE += Ex
             for rod in rods:
@@ -233,7 +229,7 @@ def init():
                 for a in range(-n/2, n/2):  # fix to integer
                     dr = vector(rod.pos.x, rod.pos.y + a * dx, rod.pos.z)
                     rx = observe - dr
-                    if rx.mag > 1e-2:
+                    if rx.mag > 1e-1:
                         Ex = (k * rod.q / n* safe_hat(rx)) / (rx.mag**2) #safe_hat makes Ex zero if it's too close to a source
                         E += Ex
                 resultantE += E
@@ -260,7 +256,7 @@ def calculateField():
             observe = vector(i*3, j*3, 0)
             for charge in balls:
                 rx = observe - charge.pos
-                if rx.mag > 1e-2:
+                if rx.mag > 1e-1:
                     Ex = (k * charge.q * safe_hat(rx)) / (rx.mag**2)
                     resultantE += Ex
             for rod in rods:
@@ -272,7 +268,7 @@ def calculateField():
                     else:
                         dr.y = dr.y + a * dx
                     rx = observe - dr
-                    if rx.mag > 1e-2:
+                    if rx.mag > 1e-1:
                         Ex = (k * rod.q / n* safe_hat(rx)) / (rx.mag**2)
                         E += Ex
                 resultantE += E
@@ -295,6 +291,50 @@ def field(evt):
 fcheck = checkbox( bind=field, text='Field', checked=True)
 scene.append_to_caption('     ')
 
+def showF(evt):
+    if evt.checked:
+        test.visible = True
+    else:
+        test.visible = False
+
+showfcheck = checkbox( bind=showF, text='Show Force', checked=True)
+scene.append_to_caption('     ')
+
+collision = False
+showO1 = False
+o11 = curve(pos=[vector(-30, -62, 0), vector(-30, 10, 0)], color=color.black, visible = False)
+o12 = curve(pos=[vector(20, 60, 0), vector(20, -30, 0)], color=color.black, visible = False)
+
+def obstacle1(evt):
+    global showO1
+    if evt.checked:
+        showO1 = True
+        o11.visible = True
+    else:
+        showO1 = False
+        o11.visible = False
+
+o1 = checkbox( bind=obstacle1, text='Add Obstacle', checked=False)
+scene.append_to_caption('     ')
+
+trap = False
+trapObj = [sphere(pos=vector(-20,10,0), color=color.red, radius=2, q = qe, visible = False)]
+def ftrap(evt):
+    global trap
+    if evt.checked:
+        for obj in trapObj:
+            obj.visible = True
+            balls.append(obj)
+        calculateField()
+    else:
+        for obj in trapObj:
+            obj.visible = False
+            balls.remove(obj)
+        calculateField()
+
+trapcheck = checkbox( bind=ftrap, text='Victoria\'s trap', checked=False)
+scene.append_to_caption('     \n\n')
+
 def mass(evt):
     console.log(evt)
     if evt.id is 'm':
@@ -305,12 +345,24 @@ mslider = slider(bind=mass, length=250, max=20, min=1, step=1, value=1, id='m')
 
 wt = wtext(text='{:1.2f}'.format(mslider.value))
 
-scene.append_to_caption('x the mass of an electron  ')
+scene.append_to_caption('x the mass of an electron  \n')
 
 
+goalText = text(text='GOAL!', color=color.green,align = 'center', pos = vector(0,0,160), visible =False)
+collisionText = text(text='Fail :(', color=color.red,align = 'center', pos = vector(0,0,160), visible =False)
 while t>=0:
-    rate(1000)
-
+    rate(100000)
+    global goal
+    
+    if showO1:
+        o11.visible = True
+        o12.visible = True
+        collision = (abs(puck.pos.x + 30) < 1 and puck.pos.y >= -62 and puck.pos.y <= 10) or (abs(puck.pos.x - 20) < 1 and puck.pos.y >= -30 and puck.pos.y <= 60)
+            #print("collision")     
+    else:
+        o11.visible = False
+        o12.visible = False
+        
     if positive:
         puck.color=vector(1, 0.753, 0.796)
         puck.q=qe
@@ -318,9 +370,17 @@ while t>=0:
         puck.color=color.blue
         puck.q=-qe
     if start:
+        
+        if collision:
+            start = False
+            collisionText.visible = True
+        else:
+            collisionText.visible = False
+        
         closestA = vector(round(puck.pos.x /3),round(puck.pos.y /3),0)
         f = puck.q * fieldE[closestA.x][closestA.y]    # this sets net force in y direction equal to force of gravity   
-            
+        if (f.mag > 1e-29):
+            f = vector(0,0,0)
         test.pos = puck.pos
         test.axis = f.hat* 10
         puck.acc = f/puck.mass   # this sets accerlation in y direction
@@ -344,9 +404,15 @@ while t>=0:
             puck.vel.y = -puck.vel.y
 
         #goal
-        if puck.pos.x + puck.radius <= 115 and puck.pos.x + puck.radius >= 110 and puck.pos.y + puck.radius <= 10 and puck.pos.y - puck.radius >= -10:
+        
+        goal = puck.pos.x + puck.radius <= 115 and puck.pos.x + puck.radius >= 110 and puck.pos.y + puck.radius <= 10 and puck.pos.y - puck.radius >= -10
+        if goal:
             start = False
-            text(text='GOAL!', color=color.green,align = 'center', pos = vector(0,0,160))
+            print(start)
+            goalText.visible = True
+        else:
+            goalText.visible = False
+
 # notes:
 # might need small time step bc euler method is bad
 
