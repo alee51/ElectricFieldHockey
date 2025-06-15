@@ -2,10 +2,10 @@ Web VPython 3.2
 k = 8.99e9
 qe = 1.6e-19
 
-def handle_mousedown(evt):
-  print("Mouse down at:", scene.mouse.pos)
-
-scene.bind('mousedown', handle_mousedown)
+#def handle_mousedown(evt):
+#  print("Mouse down at:", scene.mouse.pos)
+#
+#scene.bind('mousedown', handle_mousedown)
 
 start = False
 goal = False
@@ -15,7 +15,7 @@ def changeStart(evt):
         start = True
         clrbtn.background = color.red
         clrbtn.text = 'Stop'
-        print(start)
+        #print(start)
     else:
         start = False
         clrbtn.text = 'Start'
@@ -122,7 +122,6 @@ def setup():
     curve(pos=[vector(110, 10, 0), vector(115, 10, 0)], color=color.green)
     curve(pos=[vector(115, -10, 0), vector(115, 10, 0)], color=color.green)
     curve(pos=[vector(110, -10, 0), vector(115, -10, 0)], color=color.green)
-    print(scene.camera.pos)
     scene.autoscale = False
     
     #puck=sphere(pos=vector(-4,-0.75,0), color=vector(1, 0.753, 0.796), size=0.3*vec(1,1,1), q=qe, make_trail = True)
@@ -135,7 +134,7 @@ s = None # declare s to be used below
 
 balls = []
 rods = []
-print(balls)
+
 def down():
     nonlocal drag, s
     if scene.mouse.pos.x >= 7.5 and scene.mouse.pos.x <= 16 and scene.mouse.pos.y >= 70 and scene.mouse.pos.y <= 86:
